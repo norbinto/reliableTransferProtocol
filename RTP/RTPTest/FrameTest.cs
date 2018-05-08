@@ -35,7 +35,7 @@ namespace RTPTest
         public void FrameMACNotCorrect()
         {
             Packet smg = new Packet("192.168.1.1;192.168.1.2;80;99;10;message");
-            Frame frm = new Frame(smg, "gg-aa-aa-aa-aa-aa", "gg-aa-aa-aa-aa-aa");
+            Frame frm = new Frame(smg, "zg-aa-aa-aa-aa-aa", "zg-aa-aa-aa-aa-aa");
         }
 
     }

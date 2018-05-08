@@ -12,12 +12,20 @@ namespace RTP.Protocol
         public static int SYNC = 100;
         public static int SYNC_ACK = 101;
         public static int ESTAB = 102;
+        public static int READY = 103;
         public static int SEND = 200;
         public static int RECIE = 300;
+        public static int REJECT = 500;
 
         public string IPAddress;
         public string MACAddress;
         public Int16 Port;
+
+        public string DestinationIPAddress;
+        public string DestinationMACAddress;
+        public Int16 DestinationPort;
+
+        public int status = 0;
 
         public ReliableProtocol(string IPAddress, string MACAddress, Int16 Port)
         {
@@ -26,17 +34,22 @@ namespace RTP.Protocol
             this.Port = Port;
         }
 
-        public Bitset Send(string Data, Int16 DestinationPort, string DestinationIPAddress, string DestinationMacAddress)
+        public Bitset Send(Message message, Int16 DestinationPort, string DestinationIPAddress, string DestinationMacAddress)
         {
-            Message msg = new Message(SEND, Data);
-            Segment sgm = new Segment(msg, Port, DestinationPort);
+            Segment sgm = new Segment(message, Port, DestinationPort);
             Packet pkg = new Packet(sgm, IPAddress, DestinationIPAddress);
             Frame frm = new Frame(pkg, MACAddress, DestinationMacAddress);
             Bitset ret = new Bitset(frm);
+            status = message.Statuscode;
             return ret;
         }
 
-        public void Recieve(Bitset bitset)
+        public Bitset Send(Message message)
+        {
+            return Send(message, DestinationPort, DestinationIPAddress, DestinationMACAddress);
+        }
+
+        public Bitset Recieve(Bitset bitset)
         {
             Frame frm = new Frame(bitset);
             Packet pkg = frm.ActualPacket;
@@ -45,36 +58,65 @@ namespace RTP.Protocol
 
             if (msg.Statuscode == SYNC)
             {
-                SendSyncAck();
+                return SendSyncAck();
             }
             if (msg.Statuscode == SYNC_ACK)
             {
-                SendEstablished();
+                return SendEstablished();
+            }
+            if (msg.Statuscode == ESTAB)
+            {
+                return SendReady();
             }
             if (msg.Statuscode == SEND)
             {
-                SendRecieved();
+                return SendRecieved();
             }
+            if (msg.Statuscode == REJECT)
+            {
+                status = REJECT;
+            }
+            if (msg.Statuscode == READY)
+            {
+                status = READY;
+            }
+            return null;
         }
 
-        public void SendRecieved()
+        public Bitset SendReady()
         {
-            throw new NotImplementedException();
+            Message msg = new Message(READY, "ready for communication");
+#warning modify a state for this class, and wait one stuff
+            return Send(msg, DestinationPort, DestinationIPAddress, DestinationMACAddress);
+
         }
 
-        public void SendEstablished()
+        public Bitset SendRecieved()
         {
-            throw new NotImplementedException();
+            Message msg = new Message(RECIE, "recieved a message");
+#warning modify a state for this class, and wait one stuff
+            return Send(msg, DestinationPort, DestinationIPAddress, DestinationMACAddress);
         }
 
-        public void SendSyncAck()
+        public Bitset SendEstablished()
         {
-            throw new NotImplementedException();
+            Message msg = new Message(ESTAB, "establish sync ack");
+#warning modify a state for this class, and wait one stuff
+            return Send(msg, DestinationPort, DestinationIPAddress, DestinationMACAddress);
         }
 
-        public Bitset StartSync()
+        public Bitset SendSyncAck()
         {
-            throw new NotImplementedException();
+            Message msg = new Message(SYNC_ACK, "reply sync ack");
+#warning modify a state for this class, and wait one stuff
+            return Send(msg, DestinationPort, DestinationIPAddress, DestinationMACAddress);
+        }
+
+        public Bitset StartSync(Int16 DestinationPort, string DestinationIPAddress, string DestinationMacAddress)
+        {
+            Message msg = new Message(SYNC, "start sync");
+#warning modify a state for this class, and wait one stuff
+            return Send(msg, DestinationPort, DestinationIPAddress, DestinationMacAddress);
         }
     }
 }

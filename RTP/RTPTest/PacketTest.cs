@@ -31,7 +31,7 @@ namespace RTPTest
         [ExpectedException(typeof(Exception))]
         public void PacketIPNotCorrect()
         {
-            Packet smg = new Packet("192.168.1.1;192.168.1.2;80;99;message");
+            Packet smg = new Packet("192.368.1.1;192.168.1.2;80;99;message");
 
         }
     }

@@ -15,7 +15,7 @@ namespace RTP
 
             ReliableProtocol pc2 = new ReliableProtocol("192.168.1.2", "FF-DD-EE-CC-BB-AA", 443);
 
-            pc1.Send("",2,"","");
+            //pc1.Send(,2,"","");
         }
     }
 }
