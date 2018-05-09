@@ -25,7 +25,7 @@ namespace RTP.Protocol
         public string DestinationMACAddress;
         public Int16 DestinationPort;
 
-        public int status = 0;
+        public int status = REJECT;
 
         public ReliableProtocol(string IPAddress, string MACAddress, Int16 Port)
         {
@@ -62,15 +62,24 @@ namespace RTP.Protocol
             }
             if (msg.Statuscode == SYNC_ACK)
             {
-                return SendEstablished();
+                if (status == REJECT)
+                    return SendEstablished();
+                else
+                    return SendReject();
             }
             if (msg.Statuscode == ESTAB)
             {
-                return SendReady();
+                if (status == SYNC_ACK)
+                    return SendReady();
+                else
+                    return SendReject();
             }
             if (msg.Statuscode == SEND)
             {
-                return SendRecieved();
+                if (status == READY)
+                    return SendRecieved();
+                else
+                    return SendReject();
             }
             if (msg.Statuscode == REJECT)
             {
@@ -81,6 +90,13 @@ namespace RTP.Protocol
                 status = READY;
             }
             return null;
+        }
+
+        private Bitset SendReject()
+        {
+            Message msg = new Message(REJECT, "invalid state, connection rejected");
+
+            return Send(msg, DestinationPort, DestinationIPAddress, DestinationMACAddress);
         }
 
         public Bitset SendReady()
