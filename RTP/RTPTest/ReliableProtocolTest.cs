@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Timers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RTP.Protocol;
 using RTP.Protocol.DataSet;
@@ -19,16 +21,15 @@ namespace RTPTest
             bool one = true;
             while (pc1tmp != null && pc2tmp != null)
             {
-                if (one)
+                if (one || pc1.SentAgain)
                 {
-                    one = false;
                     pc2tmp = pc2.Recieve(pc1tmp);
                 }
-                else
+                if (!one || pc2.SentAgain)
                 {
-                    one = true;
                     pc1tmp = pc1.Recieve(pc2tmp);
                 }
+                one = !one;
 
             }
             Assert.AreEqual(ReliableProtocol.READY, pc1.status);
@@ -37,14 +38,46 @@ namespace RTPTest
         }
 
         [TestMethod]
+        public void SendAgain()
+        {
+            ReliableProtocol pc1 = new ReliableProtocol("10.0.0.2", "00-11-22-33-44-55", 80);
+            ReliableProtocol pc2 = new ReliableProtocol("192.168.1.2", "FF-DD-EE-CC-BB-AA", 443);
+
+
+          
+
+
+            var pc1tmp = pc1.SendSyncAck();
+            Bitset pc2tmp = pc1tmp;
+            bool one = true;
+            while (pc1tmp != null && pc2tmp != null)
+            {
+                if (one || pc1.SentAgain)
+                {
+                    pc2tmp = pc2.Recieve(pc1tmp);
+                }
+                if (!one || pc2.SentAgain)
+                {
+                    pc1tmp = pc1.Recieve(pc2tmp);
+                }
+                one = !one;
+
+            }
+            Assert.AreEqual(ReliableProtocol.READY, pc1.status);
+            Assert.AreEqual(ReliableProtocol.READY, pc2.status);
+        }
+
+        
+
+        [TestMethod]
         public void Reject()
         {
             ReliableProtocol pc1 = new ReliableProtocol("10.0.0.2", "00-11-22-33-44-55", 80);
             ReliableProtocol pc2 = new ReliableProtocol("192.168.1.2", "FF-DD-EE-CC-BB-AA", 443);
 
             var pc1tmp = pc1.SendSyncAck();
-           pc1.Recieve( pc2.Send(new Message(ReliableProtocol.REJECT,"rejtected")));
-            
+            pc1.Recieve(pc2.Send(new Message(ReliableProtocol.REJECT, "rejtected")));
+
             Assert.AreEqual(ReliableProtocol.REJECT, pc1.status);
 
             Assert.AreEqual(ReliableProtocol.REJECT, pc2.status);
@@ -56,7 +89,7 @@ namespace RTPTest
             ReliableProtocol pc1 = new ReliableProtocol("10.0.0.2", "00-11-22-33-44-55", 80);
             ReliableProtocol pc2 = new ReliableProtocol("192.168.1.2", "FF-DD-EE-CC-BB-AA", 443);
 
-            var pc1tmp = pc1.Send(new Message(ReliableProtocol.SEND,"message"));
+            var pc1tmp = pc1.Send(new Message(ReliableProtocol.SEND, "message"));
             Bitset pc2tmp = pc1tmp;
             bool one = true;
             while (pc1tmp != null && pc2tmp != null)

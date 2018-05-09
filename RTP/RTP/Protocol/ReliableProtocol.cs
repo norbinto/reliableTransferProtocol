@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace RTP.Protocol
 {
@@ -26,6 +27,12 @@ namespace RTP.Protocol
         public Int16 DestinationPort;
 
         public int status = REJECT;
+
+        public int id = -1;
+
+        public Message lastMessage = new Message(REJECT, "initial status");
+        public int lastlastMessageId;
+        public bool SentAgain = false;
 
         public ReliableProtocol(string IPAddress, string MACAddress, Int16 Port)
         {
@@ -56,6 +63,7 @@ namespace RTP.Protocol
             Segment sgm = pkg.ActualSegment;
             Message msg = sgm.ActualMessage;
 
+            Console.WriteLine("RECIEVED id:" + id + " statuscode:" + msg.Statuscode + " msg data:" + msg.Data);
             if (msg.Statuscode == SYNC)
             {
                 return SendSyncAck();
@@ -92,17 +100,18 @@ namespace RTP.Protocol
             return null;
         }
 
-        private Bitset SendReject()
+        public Bitset SendReject()
         {
             Message msg = new Message(REJECT, "invalid state, connection rejected");
-
+            Console.WriteLine("SENT id:" + id + " statuscode:" + msg.Statuscode + " msg data:" + msg.Data);
             return Send(msg, DestinationPort, DestinationIPAddress, DestinationMACAddress);
         }
 
         public Bitset SendReady()
         {
             Message msg = new Message(READY, "ready for communication");
-#warning modify a state for this class, and wait one stuff
+            Console.WriteLine("SENT id:" + id + " statuscode:" + msg.Statuscode + " msg data:" + msg.Data);
+            lastMessage = msg;
             return Send(msg, DestinationPort, DestinationIPAddress, DestinationMACAddress);
 
         }
@@ -110,28 +119,33 @@ namespace RTP.Protocol
         public Bitset SendRecieved()
         {
             Message msg = new Message(RECIE, "recieved a message");
-#warning modify a state for this class, and wait one stuff
+            Console.WriteLine("SENT id:" + id + " statuscode:" + msg.Statuscode + " msg data:" + msg.Data);
+            lastMessage = msg;
             return Send(msg, DestinationPort, DestinationIPAddress, DestinationMACAddress);
         }
 
         public Bitset SendEstablished()
         {
             Message msg = new Message(ESTAB, "establish sync ack");
-#warning modify a state for this class, and wait one stuff
+            Console.WriteLine("SENT id:" + id + " statuscode:" + msg.Statuscode + " msg data:" + msg.Data);
+            lastMessage = msg;
             return Send(msg, DestinationPort, DestinationIPAddress, DestinationMACAddress);
         }
 
         public Bitset SendSyncAck()
         {
             Message msg = new Message(SYNC_ACK, "reply sync ack");
-#warning modify a state for this class, and wait one stuff
+            Console.WriteLine("SENT id:" + id + " statuscode:" + msg.Statuscode + " msg data:" + msg.Data);
+            lastMessage = msg;
             return Send(msg, DestinationPort, DestinationIPAddress, DestinationMACAddress);
         }
 
         public Bitset StartSync(Int16 DestinationPort, string DestinationIPAddress, string DestinationMacAddress)
         {
             Message msg = new Message(SYNC, "start sync");
-#warning modify a state for this class, and wait one stuff
+            Console.WriteLine("SENT id:" + id + " statuscode:" + msg.Statuscode + " msg data:" + msg.Data);
+            lastMessage = msg;
+
             return Send(msg, DestinationPort, DestinationIPAddress, DestinationMacAddress);
         }
     }
