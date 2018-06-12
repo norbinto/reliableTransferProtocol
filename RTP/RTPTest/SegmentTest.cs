@@ -12,7 +12,7 @@ namespace RTPTest
         {
             Segment smg = new Segment("80;433;10;666;message");
             Assert.AreEqual(80, smg.SourcePort);
-            Assert.AreEqual(433, smg.DestinationPort);
+            Assert.AreEqual(433, smg.DestinationPC.Port);
             Assert.AreEqual("message", smg.ActualMessage.Data);
         }
 

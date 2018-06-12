@@ -49,6 +49,7 @@
     <Compile Include="Protocol\DataSet\Message.cs" />
     <Compile Include="Protocol\DataSet\Packet.cs" />
     <Compile Include="Protocol\DataSet\Segment.cs" />
+    <Compile Include="Protocol\MessageSendedEventArgs.cs" />
     <Compile Include="Protocol\ReliableProtocol.cs" />
   </ItemGroup>
   <ItemGroup>
