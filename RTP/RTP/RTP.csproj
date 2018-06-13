@@ -51,6 +51,8 @@
     <Compile Include="Protocol\DataSet\Segment.cs" />
     <Compile Include="Protocol\MessageSendedEventArgs.cs" />
     <Compile Include="Protocol\ReliableProtocol.cs" />
+    <Compile Include="Protocol\Simulator.cs" />
+    <Compile Include="Protocol\Statuscode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

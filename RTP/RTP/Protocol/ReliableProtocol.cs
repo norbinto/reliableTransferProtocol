@@ -10,12 +10,7 @@ namespace RTP.Protocol
 {
     public class ReliableProtocol
     {
-        public static int SYNC = 100;
-        public static int SYNC_ACK = 101;
-        public static int ESTAB = 102;
-        public static int SEND = 200;
-        public static int RECIE = 300;
-        public static int REJECT = 500;
+
 
         public string IPAddress;
         public string MACAddress;
@@ -23,13 +18,13 @@ namespace RTP.Protocol
 
         public ReliableProtocol Destination;
 
-        public int status = REJECT;
+        public int status = (int)Statuscode.REJECT;
 
         public int id = -1;
 
-        public Message lastMessage = new Message(REJECT, "initial status");
-        public int lastlastMessageId = -1;
-        public bool SentAgain = false;
+        public Message lastMessage = new Message((int)Statuscode.REJECT, "initial status");
+
+        public bool CommunicationReady { get; private set; } = false;
 
         public event EventHandler<MessageSendedEventArgs> MessageSended;
 
@@ -53,11 +48,10 @@ namespace RTP.Protocol
             Bitset ret = new Bitset(frm);
             status = message.Statuscode;
 
-            if (status == RECIE)
+            if (status == (int)Statuscode.RECIE)
             {
-                status = ESTAB;
+                status = (int)Statuscode.ESTAB;
             }
-            lastlastMessageId = lastMessage.Id;
 
             lastMessage = message;
 
@@ -79,79 +73,76 @@ namespace RTP.Protocol
             Message msg = sgm.ActualMessage;
 
             Console.WriteLine("RECIEVED id:" + id + " statuscode:" + msg.Statuscode + " msg id:" + msg.Id);
-            SentAgain = false;
-            if (msg.Statuscode == SYNC)
+            if (msg.Statuscode == (int)Statuscode.SYNC)
             {
                 return SendSyncAck();
             }
-            if (msg.Statuscode == SYNC_ACK)
+            if (msg.Statuscode == (int)Statuscode.SYNC_ACK)
             {
-                if (status == SYNC)
+                if (status == (int)Statuscode.SYNC)
                     return SendEstablished();
                 else
                     return SendReject();
             }
-            if (msg.Statuscode == ESTAB)
+            if (msg.Statuscode == (int)Statuscode.ESTAB)
             {
-                if (status == SYNC_ACK)
-                    status = ESTAB;
+                if (status == (int)Statuscode.SYNC_ACK)
+                    status = (int)Statuscode.ESTAB;
                 else
                     return SendReject();
             }
-            if (msg.Statuscode == SEND)
+            if (msg.Statuscode == (int)Statuscode.SEND)
             {
-                if (status == ESTAB)
+                if (status == (int)Statuscode.ESTAB)
                     return SendRecieved();
                 else
                     return SendReject();
             }
-            if (msg.Statuscode == REJECT)
+            if (msg.Statuscode == (int)Statuscode.REJECT)
             {
-                status = REJECT;
+                status = (int)Statuscode.REJECT;
             }
-            if (msg.Statuscode == RECIE)
+            if (msg.Statuscode == (int)Statuscode.RECIE)
             {
-                status = ESTAB;
+                status = (int)Statuscode.ESTAB;
             }
-
+            CommunicationReady = true;
             Console.WriteLine("------------------------------------------------------");
             return null;
         }
 
         public Bitset SendReject()
         {
-            Message msg = new Message(REJECT, "invalid state, connection rejected");
+            Message msg = new Message((int)Statuscode.REJECT, "invalid state, connection rejected");
             return Send(msg, Destination.Port, Destination.IPAddress, Destination.MACAddress);
         }
 
         public Bitset SendRecieved()
         {
-            Message msg = new Message(RECIE, "recieved a message");
+            Message msg = new Message((int)Statuscode.RECIE, "recieved a message");
             return Send(msg, Destination.Port, Destination.IPAddress, Destination.MACAddress);
         }
 
         public Bitset SendEstablished()
         {
-            Message msg = new Message(ESTAB, "establish sync ack");
+            Message msg = new Message((int)Statuscode.ESTAB, "establish sync ack");
             return Send(msg, Destination.Port, Destination.IPAddress, Destination.MACAddress);
         }
 
         public Bitset SendSyncAck()
         {
-            Message msg = new Message(SYNC_ACK, "reply sync ack");
+            Message msg = new Message((int)Statuscode.SYNC_ACK, "reply sync ack");
             return Send(msg, Destination.Port, Destination.IPAddress, Destination.MACAddress);
         }
 
         public Bitset StartSync(Int16 DestinationPort, string DestinationIPAddress, string DestinationMacAddress)
         {
-            Message msg = new Message(SYNC, "start sync");
+            Message msg = new Message((int)Statuscode.SYNC, "start sync");
             return Send(msg, Destination.Port, DestinationIPAddress, DestinationMacAddress);
         }
 
         public Bitset SendAgain()
         {
-            SentAgain = true;
-
             return Send(lastMessage);
         }
     }
